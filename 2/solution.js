@@ -1007,11 +1007,13 @@ function makeLevels(report) {
 }
 function isReportSafe(report) {
   let levels = makeLevels(report);
-  const isLevelSafe =
+  return isLevelSafe(levels);
+}
+function isLevelSafe(levels) {
+  return (
     (isAllIncreasing(levels) || isAllDecreasing(levels)) &&
-    areAdjacentLevelsSafe(levels);
-  console.log({ report, isLevelSafe });
-  return isLevelSafe;
+    areAdjacentLevelsSafe(levels)
+  );
 }
 
 function areAdjacentLevelsSafe(levels) {
@@ -1055,8 +1057,6 @@ const numSafeReports = safeReports.reduce(
   0,
 );
 
-console.log({ numSafeReports });
-
 // Part 2: Problem Dampener
 // for unsafe reports, remove each level and check if that's safe
 function dampenReport(safeReport) {
@@ -1068,16 +1068,14 @@ function dampenReport(safeReport) {
 
   const { report } = safeReport;
   const levels = makeLevels(report);
-	console.log({levels})
   for (let i = 0; i < levels.length; i++) {
     let spliced = levels.filter((level, j) => j !== i);
-		console.log({i, spliced})
 
-		const isLevelSafe =
-			(isAllIncreasing(levels) || isAllDecreasing(levels)) &&
-			areAdjacentLevelsSafe(levels);
+    const isDampenedSafe = isLevelSafe(spliced)
 
-    if (isLevelSafe) {
+    if (isDampenedSafe) {
+			const removed = levels[i]
+			console.log({levels, i, removed, dampenedSafe: true, reportNum: safeReport.i })
       return {
         ...safeReport,
         dampenedSafe: true,
@@ -1092,5 +1090,9 @@ function dampenReport(safeReport) {
 }
 
 const dampenedReports = safeReports.map(dampenReport);
-const numDampenedSafe = dampenedReports.reduce((sum, report) => report.dampenedSafe ? sum+1 : sum, 0)
-console.log({numDampenedSafe})
+const numDampenedSafe = dampenedReports.reduce(
+  (sum, report) => (report.dampenedSafe ? sum + 1 : sum),
+  0,
+);
+console.log({ numSafeReports });
+console.log({ numDampenedSafe });
