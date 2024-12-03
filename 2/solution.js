@@ -1,4 +1,5 @@
-const input = `65 66 68 71 72 72
+const input = `40 42 45 46 49 47
+65 66 68 71 72 72
 44 46 49 52 55 59
 62 63 66 68 71 74 80
 20 23 25 24 26
@@ -996,7 +997,7 @@ const input = `65 66 68 71 72 72
 84 82 79 77 76 74
 81 82 84 85 88 91 92
 86 83 81 80 77 74
-81 83 86 88 89`;
+81 83 86 88 89`
 
 // Code start
 const reports = input.split("\n");
@@ -1014,7 +1015,9 @@ function getReasonLevelUnsafe(levels) {
   const isIncr = isAllIncreasing(levels);
   const isDecr = isAllDecreasing(levels);
   const adjSafe = areAdjacentLevelsSafe(levels);
-  if (isLevelSafe(levels)) return "";
+  if (isLevelSafe(levels)) {
+    throw Error("Getting unsafe reason when level is safe");
+  }
 
   let isIncreasing = undefined;
   for (let i = 0; i < levels.length - 1; i++) {
@@ -1159,7 +1162,9 @@ for (const unsafeReport of unsafe) {
   const { safe, report, reportNum } = unsafeReport;
   console.log({ safe, reportNum, report });
   for (const reason of unsafeReport.reasons) {
-    console.log('reason: ', reason );
+		const idx = reason.removedIdx
+		const { why, removed } = reason
+    console.log("reason: ", `we removed ${removed} at ${idx}, but ${why}`)
   }
 }
 console.log({ numSafeReports });
