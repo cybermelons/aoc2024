@@ -1001,24 +1001,27 @@ const input = `65 66 68 71 72 72
 // Code start
 const reports = input.split("\n");
 
-function isReportSafe(report) {
+function makeLevels(report) {
   let levels = report.split(" ").map((s) => parseInt(s));
-  const isLevelSafe = (
-     (isAllIncreasing(levels) || isAllDecreasing(levels)) 
-	&& areAdjacentLevelsSafe(levels)
-  );
-	console.log({report, isLevelSafe})
-	return isLevelSafe	
+  return levels;
+}
+function isReportSafe(report) {
+  let levels = makeLevels(report);
+  const isLevelSafe =
+    (isAllIncreasing(levels) || isAllDecreasing(levels)) &&
+    areAdjacentLevelsSafe(levels);
+  console.log({ report, isLevelSafe });
+  return isLevelSafe;
 }
 
 function areAdjacentLevelsSafe(levels) {
   for (let i = 0; i < levels.length - 1; i++) {
     const curr = levels[i];
     const next = levels[i + 1];
-		const diff = Math.abs(curr-next)
-		if (diff < 1 || diff > 3) {
-			return false
-		}
+    const diff = Math.abs(curr - next);
+    if (diff < 1 || diff > 3) {
+      return false;
+    }
   }
   return true;
 }
@@ -1041,9 +1044,53 @@ function isAllDecreasing(levels) {
   return true;
 }
 
-const numSafeReports = reports.reduce(
-  (sum, report) => (isReportSafe(report) ? sum+1 : sum),
+const safeReports = reports.map((report, i) => ({
+  i,
+  report,
+  safe: isReportSafe(report),
+}));
+
+const numSafeReports = safeReports.reduce(
+  (sum, report) => (report.safe ? sum + 1 : sum),
   0,
 );
 
-console.log({numSafeReports})
+console.log({ numSafeReports });
+
+// Part 2: Problem Dampener
+// for unsafe reports, remove each level and check if that's safe
+function dampenReport(safeReport) {
+  if (safeReport.safe)
+    return {
+      ...safeReport,
+      dampenedSafe: true,
+    };
+
+  const { report } = safeReport;
+  const levels = makeLevels(report);
+	console.log({levels})
+  for (let i = 0; i < levels.length; i++) {
+    let spliced = levels.filter((level, j) => j !== i);
+		console.log({i, spliced})
+
+		const isLevelSafe =
+			(isAllIncreasing(levels) || isAllDecreasing(levels)) &&
+			areAdjacentLevelsSafe(levels);
+
+    if (isLevelSafe) {
+      return {
+        ...safeReport,
+        dampenedSafe: true,
+      };
+    }
+  }
+
+  return {
+    ...safeReport,
+    dampenedSafe: false,
+  };
+}
+
+const dampenedReports = safeReports.map(dampenReport);
+const numDampenedSafe = dampenedReports.reduce((sum, report) => report.dampenedSafe ? sum+1 : sum, 0)
+console.log({numDampenedSafe})
