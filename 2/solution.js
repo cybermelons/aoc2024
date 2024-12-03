@@ -1009,6 +1009,42 @@ function isReportSafe(report) {
   let levels = makeLevels(report);
   return isLevelSafe(levels);
 }
+
+function getReasonLevelUnsafe(levels) {
+  const isIncr = isAllIncreasing(levels);
+  const isDecr = isAllDecreasing(levels);
+  const adjSafe = areAdjacentLevelsSafe(levels);
+  if (isLevelSafe(levels)) return "";
+
+  let isIncreasing = undefined;
+  for (let i = 0; i < levels.length - 1; i++) {
+    const curr = levels[i];
+    const next = levels[i + 1];
+
+    if (curr === next) return `at levels[${i}], ${curr} === ${next}`;
+    const diff = curr - next;
+    const stepIncreased = curr < next;
+
+    if (isIncreasing === undefined) {
+      isIncreasing = stepIncreased;
+    }
+
+    if (isIncreasing && !stepIncreased) {
+      return `at levels[${i}], we're increasing but ${curr} >= ${next} `;
+    }
+
+    if (!isIncreasing && stepIncreased)
+      return `at levels[${i}], we're decreasing but ${curr} <= ${next} `;
+
+    const absDiff = Math.abs(curr - next);
+    if (absDiff < 1)
+      return `at levels[${i}], ${curr} - ${next} = ${absDiff} < 1`;
+    if (absDiff > 3)
+      return `at levels[${i}], ${curr} - ${next} = ${absDiff} > 3`;
+  }
+  return true;
+}
+
 function isLevelSafe(levels) {
   return (
     (isAllIncreasing(levels) || isAllDecreasing(levels)) &&
@@ -1068,23 +1104,38 @@ function dampenReport(safeReport) {
 
   const { report } = safeReport;
   const levels = makeLevels(report);
+  const reasonsUnsafe = [];
   for (let i = 0; i < levels.length; i++) {
     let spliced = levels.filter((level, j) => j !== i);
+    const removed = levels[i];
 
-    const isDampenedSafe = isLevelSafe(spliced)
+    const isDampenedSafe = isLevelSafe(spliced);
 
     if (isDampenedSafe) {
-			const removed = levels[i]
-			console.log({levels, i, removed, dampenedSafe: true, reportNum: safeReport.i })
+      // console.log({
+      //   levels,
+      //   i,
+      //   removed,
+      //   dampenedSafe: true,
+      //   reportNum: safeReport.i,
+      // });
       return {
         ...safeReport,
         dampenedSafe: true,
       };
+    } else {
+      const reasonUnsafe = getReasonLevelUnsafe(spliced);
+      // console.log({ levels, spliced, reasonUnsafe, removed });
+      reasonsUnsafe.push({
+        removedIdx: i,
+        removed,
+        why: reasonUnsafe,
+      });
     }
   }
-
   return {
     ...safeReport,
+    reasonsUnsafe,
     dampenedSafe: false,
   };
 }
@@ -1094,5 +1145,22 @@ const numDampenedSafe = dampenedReports.reduce(
   (sum, report) => (report.dampenedSafe ? sum + 1 : sum),
   0,
 );
+const unsafe = dampenedReports
+  .filter(({ dampenedSafe }) => dampenedSafe === false)
+  .map((report) => ({
+    reportNum: report.i,
+    safe: false,
+    reasons: report.reasonsUnsafe,
+    report: report.report,
+  }));
+
+console.log({ unsafe });
+for (const unsafeReport of unsafe) {
+  const { safe, report, reportNum } = unsafeReport;
+  console.log({ safe, reportNum, report });
+  for (const reason of unsafeReport.reasons) {
+    console.log('reason: ', reason );
+  }
+}
 console.log({ numSafeReports });
 console.log({ numDampenedSafe });
