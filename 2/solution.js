@@ -1115,20 +1115,12 @@ function dampenReport(safeReport) {
     const isDampenedSafe = isLevelSafe(spliced);
 
     if (isDampenedSafe) {
-      // console.log({
-      //   levels,
-      //   i,
-      //   removed,
-      //   dampenedSafe: true,
-      //   reportNum: safeReport.i,
-      // });
       return {
         ...safeReport,
         dampenedSafe: true,
       };
     } else {
       const reasonUnsafe = getReasonLevelUnsafe(spliced);
-      // console.log({ levels, spliced, reasonUnsafe, removed });
       reasonsUnsafe.push({
         removedIdx: i,
         removed,
