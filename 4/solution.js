@@ -1,11 +1,12 @@
 const fs = require("node:fs");
 
-fs.readFile("input.txt", "utf8", (err, data) => {
+fs.readFile("sample.txt", "utf8", (err, data) => {
   if (err) {
     console.error(err);
     return;
   }
   main(data);
+  mainCrossMas(data);
 });
 
 function makeGrid(inputStr) {
@@ -108,6 +109,33 @@ function isInVector(grid, x, y, vector) {
     return false;
   }
 }
+function isCrossmasAt(grid, x, y) {
+  // in 3x3, the corners must be two Ms and two S
+  const center = grid[x][y];
+  try {
+    let corners = [
+      grid[x - 1][y + 1], // keep this order
+      grid[x + 1][y + 1],
+      grid[x + 1][y - 1],
+      grid[x - 1][y - 1],
+    ];
+
+    const joined = corners.join('');
+    if (joined.startsWith("SS")) {
+      return joined === "SSMM";
+    } else if (joined.startsWith("SM")) {
+      return joined === "SMMS";
+    } else if (joined.startsWith("MS")) {
+      return joined === "MSSM";
+    } else {
+      return joined === "MMSS";
+    }
+  } catch (e) {
+    return false;
+  }
+
+  return false;
+}
 
 function countXmasAt(grid, x, y) {
   const directions = [
@@ -127,6 +155,32 @@ function countXmasAt(grid, x, y) {
   );
   console.log({ x, y, counts });
   return counts;
+}
+
+function mainCrossMas(input) {
+  // find each X and do a floodfill from it to find xmas
+  // run on every x
+  const grid = makeGrid(input);
+  const startLocations = [];
+  for (let i = 0; i < grid.length; i++) {
+    for (let j = 0; j < grid.length; j++) {
+      const letter = grid[i][j];
+      if (letter === "A") {
+        startLocations.push([i, j]);
+      }
+    }
+  }
+
+  const xmasCountsPerLocation = startLocations.map(([x, y]) => {
+    return isCrossmasAt(grid, x, y) ? 1 : 0;
+  });
+
+  console.log({xmasCountsPerLocation })
+  const crossmasCounts = xmasCountsPerLocation.reduce(
+    (sum, count) => sum + count,
+    0,
+  );
+  console.log({ crossmasCounts });
 }
 
 function main(input) {
