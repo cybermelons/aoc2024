@@ -1,6 +1,6 @@
 const fs = require("node:fs");
 
-fs.readFile("sample.txt", "utf8", (err, data) => {
+fs.readFile("input.txt", "utf8", (err, data) => {
   if (err) {
     console.error(err);
     return;
@@ -58,9 +58,9 @@ function isDiagRight(grid, x, y) {
   try {
     const word = [
       grid[x][y],
-      grid[x+1][y+1],
-      grid[x+2][y+2],
-      grid[x+3][y+3],
+      grid[x + 1][y + 1],
+      grid[x + 2][y + 2],
+      grid[x + 3][y + 3],
     ].join("");
     return word === "XMAS";
   } catch (e) {
@@ -71,9 +71,9 @@ function isDiagRight(grid, x, y) {
   try {
     const word = [
       grid[x][y],
-      grid[x+1][y+1],
-      grid[x+2][y+2],
-      grid[x+3][y+3],
+      grid[x + 1][y + 1],
+      grid[x + 2][y + 2],
+      grid[x + 3][y + 3],
     ].join("");
     return word === "XMAS";
   } catch (e) {
@@ -95,13 +95,13 @@ function isRightToLeft(grid, x, y) {
   }
 }
 function isInVector(grid, x, y, vector) {
-  const [vecX, vecY] = vector
+  const [vecX, vecY] = vector;
   try {
     const rightToLeft = [
       grid[x][y],
-      grid[x + vecX*1][y+vecX*1],
-      grid[x + vecX*2][y+vecX*2],
-      grid[x + vecX*3][y+vecX*3],
+      grid[x + vecX * 1][y + vecY * 1],
+      grid[x + vecX * 2][y + vecY * 2],
+      grid[x + vecX * 3][y + vecY * 3],
     ].join("");
     return rightToLeft === "XMAS";
   } catch (e) {
@@ -111,18 +111,22 @@ function isInVector(grid, x, y, vector) {
 
 function countXmasAt(grid, x, y) {
   const directions = [
-    isUpDown(grid, x, y),
-    isDownUp(grid, x, y),
-    isLeftToRight(grid, x, y),
-    isRightToLeft(grid, x, y),
-    isInVector(grid,x,y,[1,1]),
-    isInVector(grid,x,y,[1,-1]),
-    isInVector(grid,x,y,[-1,1]),
-    isInVector(grid,x,y,[-1,-1]),
+    isInVector(grid, x, y, [1, 0]),
+    isInVector(grid, x, y, [-1, 0]),
+    isInVector(grid, x, y, [0, 1]),
+    isInVector(grid, x, y, [0, -1]),
+
+    isInVector(grid, x, y, [1, 1]),
+    isInVector(grid, x, y, [1, -1]),
+    isInVector(grid, x, y, [-1, 1]),
+    isInVector(grid, x, y, [-1, -1]),
   ];
-  const counts = directions.reduce((sum,result) => result ? sum+1: sum, 0)
-  console.log({directions,x,y, counts})
-  return counts
+  const counts = directions.reduce(
+    (sum, result) => (result ? sum + 1 : sum),
+    0,
+  );
+  console.log({ x, y, counts });
+  return counts;
 }
 
 function main(input) {
