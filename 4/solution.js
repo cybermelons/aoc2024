@@ -41,15 +41,13 @@ function isCrossmasAt(grid, x, y) {
     ];
 
     const joined = corners.join('');
-    if (joined.startsWith("SS")) {
-      return joined === "SSMM";
-    } else if (joined.startsWith("SM")) {
-      return joined === "SMMS";
-    } else if (joined.startsWith("MS")) {
-      return joined === "MSSM";
-    } else {
-      return joined === "MMSS";
-    }
+    const validPerms = new Set([
+      "SSMM",
+      "SMMS",
+      "MMSS",
+      "MSSM",
+    ])
+    return validPerms.has(joined) 
   } catch (e) {
     return false;
   }
