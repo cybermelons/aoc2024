@@ -51,30 +51,31 @@ function makeRules(rulesStr) {
   return rules;
 }
 
+function makeCompareFn(rules) {
+  // given rules, return -1 if it goes before,
+  return (a, b) => {
+    const rule = rules.find(
+      ({ pair }) =>
+        pair.find((n) => n === a) !== undefined &&
+        pair.find((n) => n === b) !== undefined,
+    );
+
+		const [first, second] = rule.pair
+		if (first === a) {
+			return a-b
+		}
+		if (first === b) {
+			return b-a
+		}
+		throw Error("invalid rule")
+  };
+}
+
 function correctUpdate(update, rules) {
-  for (const rule of rules) {
-    if (!rule(update)) {
-      console.log({ update, pair: rule.pair });
+  const compareFn = makeCompareFn(rules);
 
-      for (const num of rule.pair) {
-        const others = update.filter((n) => n !== num);
-
-        console.log({ update, num });
-        for (let i = 0; i < others.length; i++) {
-          const left = others.slice(0, i);
-          const right = others.slice(i, others.length);
-          const newUpdate = [...left, num, ...right];
-
-          console.log(newUpdate);
-          if (rules.every((doesPass) => doesPass(newUpdate))) {
-            return newUpdate;
-          }
-        }
-      }
-    }
-  }
-
-  throw Error("no proper order for update given rules");
+  const corrected = update.sort(compareFn);
+	return corrected
 }
 
 function makeRule(rulePair) {
