@@ -62,11 +62,12 @@ function makeCompareFn(rules) {
 
 		const [first, second] = rule.pair
 		if (first === a) {
-			return a-b
+			return -1
 		}
 		if (first === b) {
-			return b-a
+			return 1
 		}
+
 		throw Error("invalid rule")
   };
 }
@@ -75,6 +76,7 @@ function correctUpdate(update, rules) {
   const compareFn = makeCompareFn(rules);
 
   const corrected = update.sort(compareFn);
+	console.log({update, corrected})
 	return corrected
 }
 
