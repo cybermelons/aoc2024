@@ -43,7 +43,7 @@ function findLoopSpots(input) {
     let hasLoop = false;
     traverseMap(map, startX, startY, (prev, next) => {
       const keyPrev = `${prev.x}|${prev.y}|${prev.direction}`;
-			historySet.add(keyPrev)
+      historySet.add(keyPrev);
 
       if (next) {
         const keyNext = `${next.x}|${next.y}|${next.direction}`;
