@@ -1,6 +1,6 @@
 const fs = require("node:fs");
 
-fs.readFile("sample.txt", "utf8", (err, data) => {
+fs.readFile("input.txt", "utf8", (err, data) => {
   if (err) {
     console.error(err);
     return;
@@ -33,7 +33,6 @@ function main(input) {
   let processed = processMap(startMap, startX, startY, "up");
 
   while (!processed.done) {
-		printMap(processed.map)
     processed = processMap(
       processed.map,
       processed.nextX,
@@ -43,7 +42,7 @@ function main(input) {
   }
 
   const numVisited = countVisited(processed.map);
-	printMap(processed.map)
+  printMap(processed.map);
   console.log({ numVisited });
 }
 
@@ -75,7 +74,7 @@ function getVector(direction) {
 }
 
 function processMap(map, x, y, direction) {
-  console.log(x, y, direction);
+  //console.log(x, y, direction);
   const currentTile = map[y][x];
 
   let newDirection = direction;
@@ -91,6 +90,12 @@ function processMap(map, x, y, direction) {
       newDirection = turnRight(direction);
       nextX = x; // reset
       nextY = y;
+    } else if (nextTile === undefined) {
+      return {
+        map,
+        direction: newDirection,
+        done: true,
+      };
     }
 
     return {
@@ -124,6 +129,6 @@ function turnRight(direction) {
   }
 }
 function printMap(map) {
-	const str = map.map(rows => rows.join('')).join('\n')
-	console.log(str)
+  const str = map.map((rows) => rows.join("")).join("\n");
+  console.log(str);
 }
