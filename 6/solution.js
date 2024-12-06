@@ -42,7 +42,7 @@ function main(input) {
   }
 
   const numVisited = countVisited(processed.map);
-  printMap(processed.map);
+  //printMap(processed.map);
   console.log({ numVisited });
 }
 
@@ -80,13 +80,12 @@ function processMap(map, x, y, direction) {
   let newDirection = direction;
   let vector = getVector(direction);
   let [nextX, nextY] = [x + vector[0], y + vector[1]];
-  console.log({ vector, direction, nextX, nextY });
+  //console.log({ vector, direction, nextX, nextY });
   try {
     let nextTile = map[nextY][nextX];
 
-    console.log({ nextTile }, `at ${nextX}, ${nextY}`);
+    //console.log({ nextTile }, `at ${nextX}, ${nextY}`);
     if (nextTile === "#") {
-      console.log("reset", { nextTile });
       newDirection = turnRight(direction);
       nextX = x; // reset
       nextY = y;
