@@ -31,15 +31,12 @@ function makeMap(mapStr) {
 function findLoopSpots(input) {
   const guardPath = getGuardPath(input);
   guardPath.shift(); // start position can't be used
-  console.log(`Guard path length: ${guardPath.length}`);
 
   const possibleMaps = guardPath.reduce((sum, obstacleLocation, i) => {
     let [obsX, obsY] = obstacleLocation;
     let { map, startX, startY } = makeMap(input);
 
     map[obsY][obsX] = "O";
-    console.log(`Map ${i}`);
-    printMap(map);
 
     if (detectLoop(map, startX, startY)) {
       return [...sum, map];
