@@ -33,13 +33,13 @@ function findLoopSpots(input) {
   guardPath.shift(); // start position can't be used
   console.log(`Guard path length: ${guardPath.length}`);
 
-  const possibleMaps = guardPath.reduce((sum, obstacleLocation,i) => {
+  const possibleMaps = guardPath.reduce((sum, obstacleLocation, i) => {
     let [obsX, obsY] = obstacleLocation;
     let { map, startX, startY } = makeMap(input);
 
     map[obsY][obsX] = "O";
-		console.log(`Map ${i}`)
-		printMap(map)
+    console.log(`Map ${i}`);
+    printMap(map);
 
     if (detectLoop(map, startX, startY)) {
       return [...sum, map];
@@ -77,8 +77,8 @@ function detectLoop(map, startX, startY) {
     if (nextX !== undefined && nextY !== undefined) {
       path.push({
         direction,
-        x: startX,
-        y: startY,
+        x: nextX,
+        y: nextY,
       });
     }
 
@@ -105,7 +105,8 @@ function pathHasLoop(path) {
       other.y === y,
   );
 
-  return otherIdx !== -1;
+
+  return otherIdx >= 0;
 }
 
 function getGuardPath(input) {
@@ -191,7 +192,7 @@ function processMap(map, x, y, direction) {
   try {
     let nextTile = map[nextY][nextX];
 
-    if (nextTile === "#" || nextTile=== "O") {
+    if (nextTile === "#" || nextTile === "O") {
       // turn
       return {
         map,
