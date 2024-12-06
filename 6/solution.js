@@ -32,15 +32,32 @@ function findLoopSpots(input) {
   const guardPath = getGuardPath(input);
   guardPath.shift(); // start position can't be used
 
+  let { map, startX, startY } = makeMap(input);
+
   const possibleMaps = guardPath.reduce((sum, obstacleLocation, i) => {
-    let [obsX, obsY] = obstacleLocation;
+    const [obstacleX, obstacleY] = obstacleLocation;
+    const historySet = new Set();
     let { map, startX, startY } = makeMap(input);
+    map[obstacleY][obstacleX] = "O";
 
-    map[obsY][obsX] = "O";
+    let hasLoop = false;
+    traverseMap(map, startX, startY, (prev, next) => {
+      const keyPrev = `${prev.x}|${prev.y}|${prev.direction}`;
+			historySet.add(keyPrev)
 
-    if (detectLoop(map, startX, startY)) {
+      if (next) {
+        const keyNext = `${next.x}|${next.y}|${next.direction}`;
+        if (historySet.has(keyNext)) {
+          hasLoop = true;
+          return true;
+        }
+      }
+    });
+
+    if (hasLoop) {
       return [...sum, map];
     }
+
     return sum;
   }, []);
 
@@ -61,6 +78,8 @@ function detectLoop(map, startX, startY) {
       y: startY,
     },
   ];
+
+  pathSet.has(makeKey(processed));
 
   while (!processed.done) {
     processed = processMap(
@@ -102,7 +121,6 @@ function pathHasLoop(path) {
       other.y === y,
   );
 
-
   return otherIdx >= 0;
 }
 
@@ -131,6 +149,62 @@ function getGuardPath(input) {
     }
   }
   return path;
+}
+
+function traverseMap(map, startX, startY, callback) {
+  // callback called with each direction change or move
+  let nextMovement = getNextMove(map, startX, startY, "up");
+  const shouldBreak = callback(
+    { x: startX, y: startY, direction: "up" },
+    nextMovement,
+  );
+
+  if (shouldBreak) {
+    return;
+  }
+
+  while (nextMovement !== undefined) {
+    const prev = nextMovement;
+    nextMovement = getNextMove(
+      map,
+      nextMovement.x,
+      nextMovement.y,
+      nextMovement.direction,
+    );
+    const shouldStop = callback(prev, nextMovement);
+    if (shouldStop) return;
+  }
+}
+
+// given current direction and location, return next move
+function getNextMove(map, x, y, direction) {
+  let newDirection = direction;
+  let vector = getVector(direction);
+  let [nextX, nextY] = [x + vector[0], y + vector[1]];
+  try {
+    let nextTile = map[nextY][nextX];
+
+    if (nextTile === "#" || nextTile === "O") {
+      // turn
+      return {
+        direction: turnRight(direction),
+        x,
+        y,
+      };
+    } else if (nextTile === undefined) {
+      // finished
+      return undefined;
+    }
+
+    // moved
+    return {
+      x: nextX,
+      y: nextY,
+      direction: newDirection,
+    };
+  } catch (e) {
+    return undefined;
+  }
 }
 
 function main(input) {
