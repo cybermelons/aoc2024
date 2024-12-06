@@ -1,11 +1,12 @@
 const fs = require("node:fs");
 
-fs.readFile("input.txt", "utf8", (err, data) => {
+fs.readFile("sample.txt", "utf8", (err, data) => {
   if (err) {
     console.error(err);
     return;
   }
   main(data);
+  findLoopSpots(data);
 });
 
 // tiles are accessed as map[Y][X] actually. confusing.
@@ -19,7 +20,6 @@ function makeMap(mapStr) {
   );
 
   const startX = map[startY].findIndex((c) => c === startChar);
-  map[startY][startX] = ".";
 
   return {
     map,
@@ -27,6 +27,114 @@ function makeMap(mapStr) {
     startY,
   };
 }
+
+function findLoopSpots(input) {
+  const guardPath = getGuardPath(input);
+  guardPath.shift(); // start position can't be used
+  console.log(`Guard path length: ${guardPath.length}`);
+
+  const possibleMaps = guardPath.reduce((sum, obstacleLocation,i) => {
+    let [obsX, obsY] = obstacleLocation;
+    let { map, startX, startY } = makeMap(input);
+
+    map[obsY][obsX] = "O";
+		console.log(`Map ${i}`)
+		printMap(map)
+
+    if (detectLoop(map, startX, startY)) {
+      return [...sum, map];
+    }
+    return sum;
+  }, []);
+
+  const numLoops = possibleMaps.length;
+  console.log({ numLoops });
+}
+
+function detectLoop(map, startX, startY) {
+  // run simulation until either:
+  // we detect loop in the path
+  // we terminate normally
+  let processed = processMap(map, startX, startY, "up");
+
+  let path = [
+    {
+      direction: "up",
+      x: startX,
+      y: startY,
+    },
+  ];
+
+  while (!processed.done) {
+    processed = processMap(
+      processed.map,
+      processed.nextX,
+      processed.nextY,
+      processed.direction,
+    );
+
+    const { nextX, nextY, direction } = processed;
+    if (nextX !== undefined && nextY !== undefined) {
+      path.push({
+        direction,
+        x: startX,
+        y: startY,
+      });
+    }
+
+    if (pathHasLoop(path)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function pathHasLoop(path) {
+  if (path.length < 4) return false;
+
+  // only need to check if the last element is a dupe
+  const { direction, x, y } = path[path.length - 1];
+
+  // path has loop if the path has hit the spot, same direction.
+  const otherIdx = path.findIndex(
+    (other, j) =>
+      j !== path.length - 1 &&
+      other.direction === direction &&
+      other.x === x &&
+      other.y === y,
+  );
+
+  return otherIdx !== -1;
+}
+
+function getGuardPath(input) {
+  let { map: startMap, startX, startY } = makeMap(input);
+
+  let processed = processMap(startMap, startX, startY, "up");
+  let path = [[startX, startY]];
+
+  while (!processed.done) {
+    processed = processMap(
+      processed.map,
+      processed.nextX,
+      processed.nextY,
+      processed.direction,
+    );
+  }
+
+  for (let i = 0; i < processed.map.length; i++) {
+    const row = processed.map[i];
+    for (let j = 0; j < row.length; j++) {
+      const char = row[j];
+      if (char === "X") {
+        path.push([j, i]);
+      }
+    }
+  }
+  return path;
+}
+
 function main(input) {
   let { map: startMap, startX, startY } = makeMap(input);
 
@@ -73,23 +181,27 @@ function getVector(direction) {
   return vector;
 }
 
+// each step, either turn or travel.
 function processMap(map, x, y, direction) {
-  //console.log(x, y, direction);
   const currentTile = map[y][x];
 
   let newDirection = direction;
   let vector = getVector(direction);
   let [nextX, nextY] = [x + vector[0], y + vector[1]];
-  //console.log({ vector, direction, nextX, nextY });
   try {
     let nextTile = map[nextY][nextX];
 
-    //console.log({ nextTile }, `at ${nextX}, ${nextY}`);
-    if (nextTile === "#") {
-      newDirection = turnRight(direction);
-      nextX = x; // reset
-      nextY = y;
+    if (nextTile === "#" || nextTile=== "O") {
+      // turn
+      return {
+        map,
+        direction: turnRight(direction),
+        nextX: x,
+        nextY: y,
+        done: false,
+      };
     } else if (nextTile === undefined) {
+      // finished
       return {
         map,
         direction: newDirection,
@@ -97,6 +209,7 @@ function processMap(map, x, y, direction) {
       };
     }
 
+    // moved
     return {
       nextX,
       nextY,
